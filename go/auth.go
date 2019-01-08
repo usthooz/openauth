@@ -18,8 +18,8 @@ const (
 )
 
 // QqAuth
-func QqAuth(qqAccessToken, qqOpenId string) (bool, error) {
-	_, resp, err := xhttp.GetJSON("https://graph.qq.com/oauth2.0/me?access_token=" + qqAccessToken)
+func QqAuth(accessToken, openId string) (bool, error) {
+	_, resp, err := xhttp.GetJSON(fmt.Sprintf(QqAuthApi, accessToken))
 	if err != nil {
 		return false, err
 	}
@@ -27,9 +27,25 @@ func QqAuth(qqAccessToken, qqOpenId string) (bool, error) {
 	if data == nil {
 		return false, fmt.Errorf("QqAuth: qq_open_id is nil, %+v", resp)
 	}
-	openId := data.(string)
-	if qqOpenId != openId {
-		return false, fmt.Errorf("QqAuth: qq_open_id not match, %s != %s", qqOpenId, openId)
+	qqOpenId := data.(string)
+	if openId != qqOpenId {
+		return false, fmt.Errorf("QqAuth: qq_open_id not match, %s != %s", openId, qqOpenId)
+	}
+	return true, nil
+}
+
+// WxAuth
+func WxAuth(accessToken, openId string) (bool, error) {
+	_, data, err := xhttp.GetJSON(fmt.Sprintf(WxAuthApi, accessToken, openId))
+	if err != nil {
+		return false, err
+	}
+	_, has_err := data["errcode"]
+	if has_err {
+		errcode := int(data["errcode"].(float64))
+		if errcode != 0 {
+			return false, fmt.Errorf("WxAuth: wx oauth error, errcode-> %d", errcode)
+		}
 	}
 	return true, nil
 }
