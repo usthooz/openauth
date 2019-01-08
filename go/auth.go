@@ -2,6 +2,7 @@ package openauth
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/usthooz/gutil/http"
 )
@@ -12,7 +13,7 @@ const (
 	// WxAuthApi 微信授权api
 	WxAuthApi = "https://api.weixin.qq.com/sns/auth?access_token=%s&openid==%s"
 	// SinaAuthApi 新浪授权api
-	SinaAuthApi = "https://api.weibo.com/2/account/get_uid.json?access_token=%s"
+	SinaAuthApi = "https://api.weibo.com/2/account/get_uid.json?access_token=%s&source=%s"
 	// XiaomiAuthApi 小米授权api
 	XiaomiAuthApi = "https://open.account.xiaomi.com/user/openidV2?token=%s&clientId=%s"
 )
@@ -46,6 +47,26 @@ func WxAuth(accessToken, openId string) (bool, error) {
 		if errcode != 0 {
 			return false, fmt.Errorf("WxAuth: wx oauth error, errcode-> %d", errcode)
 		}
+	}
+	return true, nil
+}
+
+// SinaAuth
+func SinaAuth(accessToken, sinaUid string) (bool, error) {
+	_, data, err := xhttp.GetJSON(fmt.Sprintf(SinaAuthApi, accessToken, sinaUid))
+	if err != nil {
+		return false, err
+	}
+	_, has_err := data["errcode"]
+	if has_err {
+		errcode := int(data["errcode"].(float64))
+		if errcode != 0 {
+			return false, fmt.Errorf("SinaAuth: sina auth error, errcode-> %d", errcode)
+		}
+	}
+	resultSinaUid := strconv.FormatFloat(data["uid"].(float64), 'f', 0, 64)
+	if sinaUid != resultSinaUid {
+		return false, fmt.Errorf("SinaAuth: sina_uid not match, sina_uid: %s != resultSinaUid: %s", sinaUid, resultSinaUid)
 	}
 	return true, nil
 }
