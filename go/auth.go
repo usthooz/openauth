@@ -30,7 +30,7 @@ func QqAuth(accessToken, openId string) (bool, error) {
 	}
 	qqOpenId := data.(string)
 	if openId != qqOpenId {
-		return false, fmt.Errorf("QqAuth: qq_open_id not match, %s != %s", openId, qqOpenId)
+		return false, fmt.Errorf("QqAuth: qq_open_id not match-> openid: %s != resultOpenId: %s", openId, qqOpenId)
 	}
 	return true, nil
 }
@@ -66,7 +66,27 @@ func SinaAuth(accessToken, sinaUid string) (bool, error) {
 	}
 	resultSinaUid := strconv.FormatFloat(data["uid"].(float64), 'f', 0, 64)
 	if sinaUid != resultSinaUid {
-		return false, fmt.Errorf("SinaAuth: sina_uid not match, sina_uid: %s != resultSinaUid: %s", sinaUid, resultSinaUid)
+		return false, fmt.Errorf("SinaAuth: sina_uid not match-> sina_uid: %s != resultSinaUid: %s", sinaUid, resultSinaUid)
+	}
+	return true, nil
+}
+
+// XiaomiAuth
+func XiaomiAuth(accessToken, openId, appId string) (bool, error) {
+	_, data, err := xhttp.GetJSON(fmt.Sprintf(XiaomiAuthApi, accessToken, appId))
+	if err != nil {
+		return false, err
+	}
+	result := data["result"].(string)
+	if result == "error" {
+		err_code := int(data["code"].(float64))
+		err_msg := data["description"].(string)
+		return false, fmt.Errorf("XiaomiAuth: xiaomi auth error, errorcode-> %d, err_description-> %v", err_code, err_msg)
+	}
+	openIDMap := data["data"].(map[string]interface{})
+	openIDStr := openIDMap["openId"].(string)
+	if openId != openIDStr {
+		return false, fmt.Errorf("XiaomiAuth: xiaomi_open_id not match-> %s != %s", openId, openIDStr)
 	}
 	return true, nil
 }
