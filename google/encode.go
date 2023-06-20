@@ -1,4 +1,4 @@
-package openauth
+package google
 
 import (
 	"encoding/base64"
