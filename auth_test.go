@@ -1,7 +1,8 @@
 package openauth
 
 import (
-	openauth "github.com/usthooz/openauth/google"
+	"github.com/usthooz/openauth/facebook"
+	"github.com/usthooz/openauth/google"
 	"testing"
 )
 
@@ -26,6 +27,11 @@ func TestXiaomiAuth(t *testing.T) {
 }
 
 func TestGoogleVerify(t *testing.T) {
-	result, err := openauth.GoogleVerify("", "")
+	result, err := google.GoogleVerify("", "")
+	t.Logf("Success: %v, Err: %v", result, err)
+}
+
+func TestFacebookVerify(t *testing.T) {
+	result, err := facebook.FacebookVerify("", "", "")
 	t.Logf("Success: %v, Err: %v", result, err)
 }
